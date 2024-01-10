@@ -10,14 +10,13 @@ import com.yupi.ojlhl.common.ResultUtils;
 import com.yupi.ojlhl.constant.UserConstant;
 import com.yupi.ojlhl.exception.BusinessException;
 import com.yupi.ojlhl.exception.ThrowUtils;
-import com.yupi.ojlhl.model.dto.question.QuestionAddRequest;
-import com.yupi.ojlhl.model.dto.question.QuestionEditRequest;
-import com.yupi.ojlhl.model.dto.question.QuestionQueryRequest;
-import com.yupi.ojlhl.model.dto.question.QuestionUpdateRequest;
+import com.yupi.ojlhl.model.dto.question.*;
+import com.yupi.ojlhl.model.dto.user.UserQueryRequest;
 import com.yupi.ojlhl.model.entity.Question;
 import com.yupi.ojlhl.model.entity.User;
 import com.yupi.ojlhl.model.vo.QuestionVO;
 import com.yupi.ojlhl.service.QuestionService;
+import com.yupi.ojlhl.service.QuestionSubmitService;
 import com.yupi.ojlhl.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -43,6 +42,11 @@ public class QuestionController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private QuestionSubmitService questionSubmitService;
+
+
+
 
     // region 增删改查
 
@@ -63,6 +67,14 @@ public class QuestionController {
         List<String> tags = questionAddRequest.getTags();
         if (tags != null) {
             question.setTags(JSONUtil.toJsonStr(tags));
+        }
+        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         questionService.validQuestion(question, true);
         User loginUser = userService.getLoginUser(request);
@@ -146,6 +158,21 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVO(question, request));
     }
 
+    @GetMapping("/get")
+    public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if (!question.getUserId().equals(loginUser.getId())&&!userService.isAdmin(loginUser)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return ResultUtils.success(question);
+    }
     /**
      * 分页获取列表（仅管理员）
      *
@@ -161,6 +188,7 @@ public class QuestionController {
                 questionService.getQueryWrapper(questionQueryRequest));
         return ResultUtils.success(questionPage);
     }
+
 
     /**
      * 分页获取列表（封装类）
@@ -206,6 +234,8 @@ public class QuestionController {
     }
 
     // endregion
+
+
 
 
     /**
