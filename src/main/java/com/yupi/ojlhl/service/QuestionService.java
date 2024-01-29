@@ -11,11 +11,12 @@ import com.yupi.ojlhl.model.vo.QuestionVO;
 import javax.servlet.http.HttpServletRequest;
 
 /**
-* @author lhl
+* @author 李鱼皮
 * @description 针对表【question(题目)】的数据库操作Service
-* @createDate 2024-01-05 19:11:39
+* @createDate 2023-08-07 20:58:00
 */
 public interface QuestionService extends IService<Question> {
+
 
     /**
      * 校验
@@ -32,8 +33,7 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
-
-
+    
     /**
      * 获取题目封装
      *
@@ -44,11 +44,12 @@ public interface QuestionService extends IService<Question> {
     QuestionVO getQuestionVO(Question question, HttpServletRequest request);
 
     /**
-     * 分页获取帖子封装
+     * 分页获取题目封装
      *
      * @param questionPage
      * @param request
      * @return
      */
     Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
+    
 }

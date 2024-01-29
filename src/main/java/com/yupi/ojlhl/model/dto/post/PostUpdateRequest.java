@@ -1,9 +1,8 @@
 package com.yupi.ojlhl.model.dto.post;
 
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.List;
+import lombok.Data;
 
 /**
  * 更新请求

@@ -1,15 +1,14 @@
 package com.yupi.ojlhl.service.impl;
-import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yupi.ojlhl.constant.CommonConstant;
-import com.yupi.ojlhl.model.dto.question.QuestionQueryRequest;
-import com.yupi.ojlhl.model.dto.questionsubmit.QuestionSubmitAddRequest;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.ojlhl.common.ErrorCode;
+import com.yupi.ojlhl.constant.CommonConstant;
 import com.yupi.ojlhl.exception.BusinessException;
+import com.yupi.ojlhl.judge.JudgeService;
 import com.yupi.ojlhl.mapper.QuestionSubmitMapper;
+import com.yupi.ojlhl.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.yupi.ojlhl.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.yupi.ojlhl.model.entity.Question;
 import com.yupi.ojlhl.model.entity.QuestionSubmit;
@@ -17,45 +16,42 @@ import com.yupi.ojlhl.model.entity.User;
 import com.yupi.ojlhl.model.enums.QuestionSubmitLanguageEnum;
 import com.yupi.ojlhl.model.enums.QuestionSubmitStatusEnum;
 import com.yupi.ojlhl.model.vo.QuestionSubmitVO;
-import com.yupi.ojlhl.model.vo.QuestionVO;
-import com.yupi.ojlhl.model.vo.UserVO;
 import com.yupi.ojlhl.service.QuestionService;
 import com.yupi.ojlhl.service.QuestionSubmitService;
-import javax.annotation.Resource;
-
 import com.yupi.ojlhl.service.UserService;
 import com.yupi.ojlhl.utils.SqlUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
-* @author lhl
-* @description 针对表【question_submit(题目提交表)】的数据库操作Service实现
-* @createDate 2024-01-05 19:13:10
+* @author 李鱼皮
+* @description 针对表【question_submit(题目提交)】的数据库操作Service实现
+* @createDate 2023-08-07 20:58:53
 */
 @Service
 public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper, QuestionSubmit>
-    implements QuestionSubmitService {
-
-    @Resource
-    private UserService userService;
+    implements QuestionSubmitService{
+    
     @Resource
     private QuestionService questionService;
 
+    @Resource
+    private UserService userService;
+
+    @Resource
+    @Lazy
+    private JudgeService judgeService;
 
     /**
-     * 点赞
+     * 提交题目
      *
      * @param questionSubmitAddRequest
      * @param loginUser
@@ -90,10 +86,21 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (!save){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
-        return questionSubmit.getId();
+        Long questionSubmitId = questionSubmit.getId();
+        // 执行判题服务
+        CompletableFuture.runAsync(() -> {
+            judgeService.doJudge(questionSubmitId);
+        });
+        return questionSubmitId;
     }
 
 
+    /**
+     * 获取查询包装类（用户根据哪些字段查询，根据前端传来的请求对象，得到 mybatis 框架支持的查询 QueryWrapper 类）
+     *
+     * @param questionSubmitQueryRequest
+     * @return
+     */
     @Override
     public QueryWrapper<QuestionSubmit> getQueryWrapper(QuestionSubmitQueryRequest questionSubmitQueryRequest) {
         QueryWrapper<QuestionSubmit> queryWrapper = new QueryWrapper<>();
@@ -111,7 +118,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         queryWrapper.eq(StringUtils.isNotBlank(language), "language", language);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(questionId), "questionId", questionId);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(status), "status", status);
+        queryWrapper.eq(QuestionSubmitStatusEnum.getEnumByValue(status) != null, "status", status);
         queryWrapper.eq("isDelete", false);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
@@ -146,4 +153,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
 
 }
+
+
+
 

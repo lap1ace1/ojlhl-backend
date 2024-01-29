@@ -1,25 +1,18 @@
 package com.yupi.ojlhl.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.yupi.ojlhl.model.dto.question.JudgeConfig;
-import com.yupi.ojlhl.model.dto.questionsubmit.JudgeInfo;
-import com.yupi.ojlhl.model.entity.Question;
+import com.yupi.ojlhl.judge.codesandbox.model.JudgeInfo;
 import com.yupi.ojlhl.model.entity.QuestionSubmit;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
- * 题目提交
+ * 题目提交封装类
  * @TableName question
  */
-@TableName(value ="question")
 @Data
 public class QuestionSubmitVO implements Serializable {
     /**
@@ -38,12 +31,12 @@ public class QuestionSubmitVO implements Serializable {
     private String code;
 
     /**
-     * 判题信息(json对象)
+     * 判题信息
      */
     private JudgeInfo judgeInfo;
 
     /**
-     * 判题状态（0 - 待判题，1 - 判题中，2 - 成功，3 - 失败）
+     * 判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）
      */
     private Integer status;
 
@@ -67,10 +60,15 @@ public class QuestionSubmitVO implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 提交用户信息
+     */
     private UserVO userVO;
 
+    /**
+     * 对应题目信息
+     */
     private QuestionVO questionVO;
-
 
     /**
      * 包装类转对象
@@ -90,7 +88,6 @@ public class QuestionSubmitVO implements Serializable {
         }
         return questionSubmit;
     }
-
 
     /**
      * 对象转包装类

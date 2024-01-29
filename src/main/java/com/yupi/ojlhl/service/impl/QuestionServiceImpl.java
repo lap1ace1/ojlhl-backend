@@ -1,6 +1,5 @@
 package com.yupi.ojlhl.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -16,17 +15,9 @@ import com.yupi.ojlhl.service.QuestionService;
 import com.yupi.ojlhl.mapper.QuestionMapper;
 import com.yupi.ojlhl.service.UserService;
 import com.yupi.ojlhl.utils.SqlUtils;
-
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,17 +26,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
-* @author lhl
+* @author 李鱼皮
 * @description 针对表【question(题目)】的数据库操作Service实现
-* @createDate 2024-01-05 19:11:39
+* @createDate 2023-08-07 20:58:00
 */
 @Service
 public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
     implements QuestionService{
 
+
     @Resource
     private UserService userService;
 
+    /**
+     * 校验题目是否合法
+     * @param question
+     * @param add
+     */
     @Override
     public void validQuestion(Question question, boolean add) {
         if (question == null) {
@@ -57,8 +54,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         String answer = question.getAnswer();
         String judgeCase = question.getJudgeCase();
         String judgeConfig = question.getJudgeConfig();
-
-        
         // 创建时，参数不能为空
         if (add) {
             ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
@@ -67,22 +62,22 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         if (StringUtils.isNotBlank(title) && title.length() > 80) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "标题过长");
         }
-        if (StringUtils.isNotBlank(content  ) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(content) && content.length() > 8192) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
         }
-        if (StringUtils.isNotBlank(answer) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(answer) && answer.length() > 8192) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "答案过长");
         }
-        if (StringUtils.isNotBlank(judgeCase) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(judgeCase) && judgeCase.length() > 8192) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "判题用例过长");
         }
-        if (StringUtils.isNotBlank(judgeConfig) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(judgeConfig) && judgeConfig.length() > 8192) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "判题配置过长");
         }
     }
 
     /**
-     * 获取查询包装类
+     * 获取查询包装类（用户根据哪些字段查询，根据前端传来的请求对象，得到 mybatis 框架支持的查询 QueryWrapper 类）
      *
      * @param questionQueryRequest
      * @return
@@ -102,29 +97,26 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         String sortField = questionQueryRequest.getSortField();
         String sortOrder = questionQueryRequest.getSortOrder();
 
-
         // 拼接查询条件
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
         queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
-        if (CollUtil.isNotEmpty(tags)) {
+        if (CollectionUtils.isNotEmpty(tags)) {
             for (String tag : tags) {
                 queryWrapper.like("tags", "\"" + tag + "\"");
             }
         }
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        queryWrapper.eq("isDelete",false);
+        queryWrapper.eq("isDelete", false);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
     }
 
-
     @Override
     public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
         QuestionVO questionVO = QuestionVO.objToVo(question);
-        long questionId = question.getId();
         // 1. 关联查询用户信息
         Long userId = question.getUserId();
         User user = null;
@@ -140,7 +132,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
     public Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request) {
         List<Question> questionList = questionPage.getRecords();
         Page<QuestionVO> questionVOPage = new Page<>(questionPage.getCurrent(), questionPage.getSize(), questionPage.getTotal());
-        if (CollUtil.isEmpty(questionList)) {
+        if (CollectionUtils.isEmpty(questionList)) {
             return questionVOPage;
         }
         // 1. 关联查询用户信息
@@ -162,4 +154,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         return questionVOPage;
     }
 
+
 }
+
+
+
+

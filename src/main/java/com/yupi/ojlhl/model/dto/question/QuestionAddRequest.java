@@ -1,13 +1,9 @@
 package com.yupi.ojlhl.model.dto.question;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * 创建请求
@@ -17,6 +13,7 @@ import lombok.Data;
  */
 @Data
 public class QuestionAddRequest implements Serializable {
+
     /**
      * 标题
      */
@@ -28,7 +25,7 @@ public class QuestionAddRequest implements Serializable {
     private String content;
 
     /**
-     * 标签列表（json 数组）
+     * 标签列表
      */
     private List<String> tags;
 
@@ -37,15 +34,15 @@ public class QuestionAddRequest implements Serializable {
      */
     private String answer;
 
-
     /**
-     * 判题用例(json数组)
+     * 判题用例
      */
     private List<JudgeCase> judgeCase;
 
     /**
-     * 判题配置(json对象)
+     * 判题配置
      */
     private JudgeConfig judgeConfig;
+
     private static final long serialVersionUID = 1L;
 }

@@ -1,9 +1,8 @@
 package com.yupi.ojlhl.model.dto.postfavour;
 
 import com.yupi.ojlhl.common.PageRequest;
-import java.io.Serializable;
-
 import com.yupi.ojlhl.model.dto.post.PostQueryRequest;
+import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

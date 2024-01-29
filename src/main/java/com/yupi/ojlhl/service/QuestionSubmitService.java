@@ -1,6 +1,5 @@
 package com.yupi.ojlhl.service;
 
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.ojlhl.model.dto.question.QuestionQueryRequest;
@@ -16,12 +15,12 @@ import com.yupi.ojlhl.model.vo.QuestionVO;
 import javax.servlet.http.HttpServletRequest;
 
 /**
-* @author lhl
-* @description 针对表【question_submit(题目提交表)】的数据库操作Service
-* @createDate 2024-01-05 19:13:10
+* @author 李鱼皮
+* @description 针对表【question_submit(题目提交)】的数据库操作Service
+* @createDate 2023-08-07 20:58:53
 */
 public interface QuestionSubmitService extends IService<QuestionSubmit> {
-
+    
     /**
      * 题目提交
      *
@@ -57,4 +56,3 @@ public interface QuestionSubmitService extends IService<QuestionSubmit> {
      */
     Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser);
 }
-

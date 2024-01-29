@@ -50,12 +50,12 @@ public class Question implements Serializable {
     private Integer acceptedNum;
 
     /**
-     * 判题用例(json数组)
+     * 判题用例（json 数组）
      */
     private String judgeCase;
 
     /**
-     * 判题配置(json对象)
+     * 判题配置（json 对象）
      */
     private String judgeConfig;
 
